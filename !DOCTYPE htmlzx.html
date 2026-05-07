@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Computer Quiz</title>
+    <style>
+        :root {
+            --primary: #4a90e2;
+            --secondary: #2c3e50;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --light: #f4f7f6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .quiz-container {
+            background: white;
+            width: 90%;
+            max-width: 700px;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--light);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        h2 { margin: 0; color: var(--secondary); }
+
+        .stats { font-weight: bold; color: var(--primary); }
+
+        .question-text {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .option {
+            background: var(--light);
+            padding: 15px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+        }
+
+        .option:hover {
+            background: #e1e8ed;
+            border-color: var(--primary);
+        }
+
+        .option.selected {
+            border-color: var(--primary);
+            background: #d1e3ff;
+        }
+
+        .option.correct {
+            background: #d4edda;
+            border-color: var(--success);
+        }
+
+        .option.wrong {
+            background: #f8d7da;
+            border-color: var(--danger);
+        }
+
+        footer {
+            margin-top: 25px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+
+        button:hover { background: #357abd; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+
+        #result-area {
+            text-align: center;
+            display: none;
+        }
+
+        .score-circle {
+            width: 100px;
+            height: 100px;
+            line-height: 100px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            font-size: 2rem;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container" id="quiz-box">
+        <header>
+            <h2>Computer Basics Quiz</h2>
+            <div class="stats">Q: <span id="current-q">1</span>/30</div>
+        </header>
+
+        <div id="quiz-content">
+            <div class="question-text" id="question">Loading question...</div>
+            <div class="options-grid" id="options">
+                <!-- Options will load here -->
+            </div>
+        </div>
+
+        <footer>
+            <button id="next-btn" onclick="nextQuestion()" disabled>Next Question</button>
+        </footer>
+    </div>
+
+    <div class="quiz-container" id="result-area">
+        <h2>Quiz Completed!</h2>
+        <div class="score-circle" id="final-score">0</div>
+        <p id="feedback">Well done!</p>
+        <button onclick="location.reload()">Restart Quiz</button>
+    </div>
+
+    <script>
+        const questions = [
+            { q: "CPU ki full form kya hai?", a: "Central Processing Unit", options: ["Central Program Unit", "Central Processing Unit", "Computer Processing Unit", "Control Power Unit"] },
+            { q: "Computer ka brain kise kaha jata hai?", a: "CPU", options: ["Monitor", "Mouse", "Keyboard", "CPU"] },
+            { q: "RAM ki full form kya hai?", a: "Random Access Memory", options: ["Read Access Memory", "Random Access Memory", "Ready Auto Memory", "None"] },
+            { q: "Sabse choti storage unit kaunsi hai?", a: "Bit", options: ["Bit", "Byte", "KB", "MB"] },
+            { q: "WWW ka full form kya hai?", a: "World Wide Web", options: ["World Wide Web", "World Web Wide", "Wide World Web", "Web World Wide"] },
+            { q: "Email ka janak kise mana jata hai?", a: "Ray Tomlinson", options: ["Bill Gates", "Mark Zuckerberg", "Ray Tomlinson", "Steve Jobs"] },
+            { q: "1 KB mein kitne bytes hote hain?", a: "1024 Bytes", options: ["1000 Bytes", "1024 Bytes", "512 Bytes", "2048 Bytes"] },
+            { q: "Input device kaunsa hai?", a: "Keyboard", options: ["Monitor", "Printer", "Speaker", "Keyboard"] },
+            { q: "Shortcut for Copy?", a: "Ctrl + C", options: ["Ctrl + V", "Ctrl + X", "Ctrl + C", "Ctrl + Z"] },
+            { q: "Shortcut for Paste?", a: "Ctrl + V", options: ["Ctrl + V", "Ctrl + P", "Ctrl + S", "Ctrl + Shift"] },
+            { q: "Computer me Permanent Memory kise kehte hain?", a: "ROM", options: ["RAM", "ROM", "CPU", "CD"] },
+            { q: "Binary system mein kitne digit hote hain?", a: "2", options: ["1", "2", "8", "10"] },
+            { q: "Operating System ka example kya hai?", a: "Windows", options: ["MS Word", "Windows", "Google Chrome", "Excel"] },
+            { q: "HTTP ki full form kya hai?", a: "Hypertext Transfer Protocol", options: ["High Text Transfer Protocol", "Hypertext Transfer Protocol", "Hyper Transfer Text", "None"] },
+            { q: "PDF ki full form?", a: "Portable Document Format", options: ["Print Document File", "Portable Document Format", "Public Data File", "Personal Data Form"] },
+            { q: "Google kya hai?", a: "Search Engine", options: ["Browser", "Search Engine", "Operating System", "Software"] },
+            { q: "Computer ka physical part kya kehlata hai?", a: "Hardware", options: ["Software", "Hardware", "Operating System", "Application"] },
+            { q: "Excel mein file ka extension kya hota hai?", a: ".xlsx", options: [".docx", ".pptx", ".xlsx", ".txt"] },
+            { q: "Internet ka malik kaun hai?", a: "Koi nahi", options: ["Google", "Microsoft", "USA", "Koi nahi"] },
+            { q: "Social Media site kaunsi hai?", a: "Facebook", options: ["Facebook", "Google", "Amazon", "Flipkart"] },
+            { q: "Monitor ko aur kya kaha jata hai?", a: "VDU", options: ["VDU", "CCTV", "UPS", "DVD"] },
+            { q: "Keyboard mein 'F' keys kitni hoti hain?", a: "12", options: ["10", "11", "12", "15"] },
+            { q: "URL ka full form?", a: "Uniform Resource Locator", options: ["Uniform Resource Locator", "Universal Radio List", "United Resource Line", "None"] },
+            { q: "IP Address ka full form?", a: "Internet Protocol", options: ["Internal Power", "Internet Protocol", "Instant Print", "Internal Process"] },
+            { q: "Virus ka full form?", a: "Vital Information Resources Under Siege", options: ["Very Important Record", "Vital Information Resources Under Siege", "Virtual Information", "None"] },
+            { q: "MS Word kya hai?", a: "Word Processing Software", options: ["Spreadsheet", "Word Processing Software", "System Software", "Game"] },
+            { q: "Refresh karne ki shortcut key?", a: "F5", options: ["F1", "F2", "F5", "F12"] },
+            { q: "Save karne ki shortcut key?", a: "Ctrl + S", options: ["Ctrl + S", "Ctrl + P", "Ctrl + O", "Ctrl + N"] },
+            { q: "LCD ki full form?", a: "Liquid Crystal Display", options: ["Light Crystal Display", "Liquid Crystal Display", "Low Crystal Display", "None"] },
+            { q: "Computer Literacy Day kab manaya jata hai?", a: "2 Dec", options: ["1 Jan", "2 Dec", "5 June", "15 Aug"] }
+        ];
+
+        let currentIdx = 0;
+        let score = 0;
+
+        const qEl = document.getElementById('question');
+        const optEl = document.getElementById('options');
+        const nextBtn = document.getElementById('next-btn');
+        const currentQEl = document.getElementById('current-q');
+
+        function loadQuestion() {
+            const data = questions[currentIdx];
+            qEl.innerText = data.q;
+            currentQEl.innerText = currentIdx + 1;
+            optEl.innerHTML = "";
+            nextBtn.disabled = true;
+
+            data.options.forEach(opt => {
+                const div = document.createElement('div');
+                div.classList.add('option');
+                div.innerText = opt;
+                div.onclick = () => selectOption(div, opt, data.a);
+                optEl.appendChild(div);
+            });
+        }
+
+        function selectOption(el, selected, correct) {
+            const allOptions = document.querySelectorAll('.option');
+            allOptions.forEach(o => o.style.pointerEvents = 'none');
+            
+            if(selected === correct) {
+                el.classList.add('correct');
+                score++;
+            } else {
+                el.classList.add('wrong');
+                // correct highlight
+                allOptions.forEach(o => {
+                    if(o.innerText === correct) o.classList.add('correct');
+                });
+            }
+            nextBtn.disabled = false;
+        }
+
+        function nextQuestion() {
+            currentIdx++;
+            if(currentIdx < questions.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quiz-box').style.display = 'none';
+            document.getElementById('result-area').style.display = 'block';
+            document.getElementById('final-score').innerText = `${score}/30`;
+            
+            let msg = score > 20 ? "Shandar! Aap genius hain!" : "Achha prayas! Thoda aur seekhein.";
+            document.getElementById('feedback').innerText = msg;
+        }
+
+        loadQuestion();
+    </script>
+</body>
+</html>
